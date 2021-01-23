@@ -37,16 +37,25 @@
                     android:text="timer duration"
                     android:layout_marginRight="5dp"
                     />
+
                 <TextView
                     android:id="@+id/tvMess"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
-                    android:gravity="center"
-                    android:textColor="@color/textColor"
-                    android:textSize="30sp"
-                    android:text="timer message"
                     android:layout_marginRight="5dp"
-                    />
+                    android:gravity="center"
+                    android:text="timer message"
+                    android:textColor="@color/textColor"
+                    android:textSize="30sp" />
+
+                <ImageView
+                    android:id="@+id/ivSet"
+                    android:layout_width="20dp"
+                    android:layout_height="20dp"
+                    android:layout_marginLeft="5dp"
+                    android:layout_marginBottom="5dp"
+                    android:layout_gravity="left|bottom"
+                    android:src="@android:drawable/ic_menu_edit" />
             </FrameLayout>
             <LinearLayout
                 android:id="@+id/layoutBtn"

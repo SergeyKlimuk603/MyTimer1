@@ -1,6 +1,9 @@
 package by.klimuk.mytimer1;
 
 
+import android.app.Activity;
+import android.content.Context;
+import android.content.Intent;
 import android.os.Handler;
 import android.util.Log;
 import android.view.Gravity;
@@ -9,8 +12,12 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.FrameLayout;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast;
+
+import static by.klimuk.mytimer1.MainActivity.*;
 
 public class MyTimer implements View.OnClickListener, Runnable {
 
@@ -43,6 +50,7 @@ public class MyTimer implements View.OnClickListener, Runnable {
     TextView tvDur;// длительность таймера в верхнем правом углу
     TextView tvMess;// сообщения таймера в центре
     LinearLayout layoutBtn;// слой для добавления в него кнопок
+    ImageView ivSet;// значек настройки таймера
 
     // переменные кнопок
     Button btnStart;
@@ -116,7 +124,10 @@ public class MyTimer implements View.OnClickListener, Runnable {
         tvName = (TextView) layoutMain.findViewById(R.id.tvName);//область имени таймера в верхнем левом углу
         tvDur = (TextView) layoutMain.findViewById(R.id.tvDur);//область отображения времени отсчитываемого таймером в верхнем правом углу
         tvMess = (TextView) layoutMain.findViewById(R.id.tvMess);//область таймера для вывода сообщений в центре таймера
+        //tvMess.setOnClickListener(this);// добавляем слушателя к панели сообщений для вызова меню настройки таймера
         layoutBtn = (LinearLayout) layoutMain.findViewById(R.id.layoutBtn);//область где будут размещаться кнопки таймера
+        ivSet = (ImageView) layoutMain.findViewById(R.id.ivSet);// добавляем значек для вызова меню настроек таймера
+        ivSet.setOnClickListener(this);//  добавляем слушателя к значку настройки таймера
     }
 
 
@@ -174,6 +185,9 @@ public class MyTimer implements View.OnClickListener, Runnable {
             case BTN_CONT_ID: //нажата кнопка Continue
                 cont();
                 break;
+            case R.id.ivSet:
+                callMenu();// вызвать меню таймера
+                break;
             default:
                 break;
         }
@@ -192,6 +206,7 @@ public class MyTimer implements View.OnClickListener, Runnable {
 
     //сброс таймера
     private void reset() {
+        runTimer = false;// останавливаем таймер
         //устанавливаем кнопку старт
         addButtons(btnStart);//обновляем кнопки
         //сбрасываем сообщение таймера вместо сообщения выводим имя
@@ -222,6 +237,15 @@ public class MyTimer implements View.OnClickListener, Runnable {
         startTime = System.currentTimeMillis();// системное время при пуске или перезапуске таймера
         runTimer = true;
         run();
+    }
+
+    // вызываем меню таймера
+    private void callMenu() {
+        Intent intent = new Intent(activity, TimerMenu.class);
+        intent.putExtra(TIMER_NAME, name);
+        intent.putExtra(TIMER_MESSAGE, message);
+        intent.putExtra(TIMER_DURATION, duration);
+        activity.startActivityForResult(intent, 0);
     }
 
     //отсчет закончен

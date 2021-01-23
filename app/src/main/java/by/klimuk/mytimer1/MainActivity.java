@@ -11,6 +11,16 @@ public class MainActivity extends AppCompatActivity {
 
     private final String LOG_TAG = "myLog";
     //Log.d(LOG_TAG, "Создали активити");
+
+    //глобальные переменные проекта
+    public static final String TIMER_ID = "id";
+    public static final String TIMER_NAME = "name";
+    public static final String TIMER_MESSAGE = "message";
+    public static final String TIMER_DURATION = "duration";
+    public static final String TIMER_LOST_TIME = "lostTime";
+    public static final String TIMER_RUN = "runTimer";
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
