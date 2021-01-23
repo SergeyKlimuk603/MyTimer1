@@ -10,4 +10,6 @@
 
     <color name="border">#FFBB86FC</color>
     <color name="textColor">#FF888888</color>
+    <color name="background_main">#ff381863</color>
+    <color name="transparent">#00000000</color>
 </resources>
