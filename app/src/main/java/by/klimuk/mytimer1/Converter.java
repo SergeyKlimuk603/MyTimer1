@@ -1,12 +1,43 @@
 package by.klimuk.mytimer1;
 
-public class Converter {
-    //класс преобразующий непрерывное время таймера к удобному для отображения виду
+class Converter {
+    //класс разделяющий непрерывное время таймера на часы, минуты и секунды и обратно
+    //TODO Нужно преобразовать этот класс в класс Time где будут происходьть все работы с
+    // преобразованием времени
 
-    public static String intToStringTime(int time) {
-        int sec = time % 60;
-        int min = (time % 3600) / 60;
-        int hour = time / 3600;
+    int sec;
+    int min;
+    int hour;
+
+    //Разделяем время на часы, минуты и секунды и преобразуем итог в формат String для отбражения
+    // на экране
+    String intToStringTime(Integer time) {
+        splitTime(time);
+        return String.format("%02d:%02d:%02d", hour, min, sec);
+    }
+
+    //если параметр времени не передан, то преобразуем текущее время конвертера
+    String intToStringTime() {
+        return String.format("%02d:%02d:%02d", hour, min, sec);
+    }
+
+    //Разделяем время на часы, минуты и секунды
+    void splitTime(int time) {
+        sec = time % 60;
+        min = (time % 3600) / 60;
+        hour = time / 3600;
+    }
+
+    //приводим время из формата часы, минуты, секунды к формату в секуднах
+    int toSeconds() {
+        int seconds = hour * 3600 + min * 60 + sec;
+        return seconds;
+    }
+    //похоже что этот метод не нужен
+    String changeTime(Integer h, Integer m, Integer s) {
+        if (h != null) hour = h;
+        if (m != null) min = m;
+        if (s != null) sec = s;
         return String.format("%02d:%02d:%02d", hour, min, sec);
     }
 }

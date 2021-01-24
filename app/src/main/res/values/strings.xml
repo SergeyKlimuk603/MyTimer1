@@ -4,4 +4,19 @@
     <string name="reset">Reset</string>
     <string name="pause">Pause</string>
     <string name="cont">Continue</string>
+    <string name="save">Save</string>
+
+    <string name="message_view">There must be a message</string>
+    <string name="set_menu_timer_name">Name</string>
+    <string name="set_menu_timer_message">Message</string>
+    <string name="set_menu_timer_duration">Duration</string>
+    <string name="set_menu_timer_hour">Hours</string>
+    <string name="set_menu_timer_min">Minutes</string>
+    <string name="set_menu_timer_sec">Seconds</string>
+
+    <string name="delete">Delete</string>
+    <string name="yes">Yes</string>
+    <string name="no">No</string>
+    <string name="delete_timer_mess">Delete timer?</string>
+    <string name="_save">Save</string>
 </resources>

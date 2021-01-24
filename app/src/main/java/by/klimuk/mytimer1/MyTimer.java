@@ -41,22 +41,22 @@ public class MyTimer implements View.OnClickListener, Runnable {
     // Вспомогательные элементы таймера
     private Handler handler;// handler для отсчета времени
     private MainActivity activity; // ссылка на вызывающую таймер активность
-
+    private Converter timeConvert;// объект для преобразования времени в различные форматы
 
     // переменные доступа к view элементам таймера
-    FrameLayout layoutMain;// корнеове View для таймера
-    FrameLayout layoutMainBack;// подсветка корневого слоя в пределах границы border
-    TextView tvName;// имя таймера в верхнем левом углу
-    TextView tvDur;// длительность таймера в верхнем правом углу
-    TextView tvMess;// сообщения таймера в центре
-    LinearLayout layoutBtn;// слой для добавления в него кнопок
-    ImageView ivSet;// значек настройки таймера
+    private FrameLayout layoutMain;// корнеове View для таймера
+    private FrameLayout layoutMainBack;// подсветка корневого слоя в пределах границы border
+    private TextView tvName;// имя таймера в верхнем левом углу
+    private TextView tvDur;// длительность таймера в верхнем правом углу
+    private TextView tvMess;// сообщения таймера в центре
+    private LinearLayout layoutBtn;// слой для добавления в него кнопок
+    private ImageView ivSet;// значек настройки таймера
 
     // переменные кнопок
-    Button btnStart;
-    Button btnReset;
-    Button btnPause;
-    Button btnCont;
+    private Button btnStart;
+    private Button btnReset;
+    private Button btnPause;
+    private Button btnCont;
     // идентификаторы кнопок
     private final int BTN_START_ID = 1;
     private final int BTN_RESET_ID = 2;
@@ -84,7 +84,6 @@ public class MyTimer implements View.OnClickListener, Runnable {
         handler = new Handler();
     }
 
-
     //имена кнопок берем из ресурса strings
     private void initBtnNames() {
         BTN_START_NAME = activity.getResources().getString(R.string.start);
@@ -99,17 +98,20 @@ public class MyTimer implements View.OnClickListener, Runnable {
         initView();
         //создаем кнопки управления таймером
         createButtons();
+        //создаём конвертор для преобразования формата времени
+        timeConvert = new Converter();
     }
 
     //настройка таймера (запускаем при создании таймера или при изменении его настроек)
-    private void initSetting(String _name, String _message, int _duration) {
+    void initSetting(String _name, String _message, int _duration) {
+        Log.d(LOG_TAG, "сработал initSetting " + _name + _message + _duration);
         setName(_name);// установка имени таймера
         setMessage(_message);// установка сообщения таймера
         setDuration(_duration);// установка длительности таймера
         //заполняем таймер начальными значениями надписей и кнопками
         tvName.setText(name);// выводим имя таймера на экран
         //преобразуем время duration в удобный для отображения формат и выводим на экран в правом верхнем углу таймера
-        tvDur.setText(Converter.intToStringTime(duration));
+        tvDur.setText(timeConvert.intToStringTime(duration));
         reset(); //сбрасываем таймер
     }
 
@@ -191,7 +193,6 @@ public class MyTimer implements View.OnClickListener, Runnable {
             default:
                 break;
         }
-
     }
 
     //запустить отсчет
@@ -242,15 +243,16 @@ public class MyTimer implements View.OnClickListener, Runnable {
     // вызываем меню таймера
     private void callMenu() {
         Intent intent = new Intent(activity, TimerMenu.class);
-        intent.putExtra(TIMER_NAME, name);
-        intent.putExtra(TIMER_MESSAGE, message);
-        intent.putExtra(TIMER_DURATION, duration);
-        activity.startActivityForResult(intent, 0);
+        intent.putExtra(TIMER_NAME, name);// передаем текущее имя таймера
+        intent.putExtra(TIMER_MESSAGE, message);// передаем текущее сообщение таймера
+        intent.putExtra(TIMER_DURATION, duration);// передаем текущую уставку времени таймера
+        activity.startActivityForResult(intent, id);// вызываем меню настройки таймера с помощью, т.к. сам таймер такой функции не поддерживает
     }
 
     //отсчет закончен
     private void endTime() {
         addButtons(btnReset);//обновляем кнопки
+        tvMess.setText(message);
         layoutMainBack.setBackgroundResource(R.color.background_main);// выделяем сработавший таймер фоном
         lostTime = 0;// таймер завершил отсчет времени и ждет сброса
         // сообщаем активности о завершении отсчета для включения сигнала
@@ -262,7 +264,7 @@ public class MyTimer implements View.OnClickListener, Runnable {
     public void run() {
         if (!runTimer) return;//таймер остановлен, прекращаем отсчет
         time = lostTime - ((int) (System.currentTimeMillis() - startTime) / 1000);// оставшееся текущее время
-        tvMess.setText(Converter.intToStringTime(time));//выводим оставшееся текущее время на экран
+        tvMess.setText(timeConvert.intToStringTime(time));//выводим оставшееся текущее время на экран
         Log.d(LOG_TAG, "" + time);
         if (time <= 0){
             endTime();
@@ -302,7 +304,13 @@ public class MyTimer implements View.OnClickListener, Runnable {
     }
 
     public void setDuration(int duration) {
-        this.duration = duration;
+        if(duration < 0) {
+            this.duration = 0;
+        } else if (duration > 359999) {
+            this.duration = 359999;
+        } else {
+            this.duration = duration;
+        }
     }
 
     public MainActivity getActivity() {
