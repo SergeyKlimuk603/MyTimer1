@@ -3,15 +3,14 @@ package by.klimuk.mytimer1;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.app.Activity;
+import android.app.AlertDialog;
+import android.app.Dialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
-import android.util.Log;
-import android.view.Gravity;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.LinearLayout;
 import android.widget.SeekBar;
 import android.widget.TextView;
 
@@ -32,10 +31,6 @@ public class TimerMenu extends Activity implements View.OnClickListener,
     private SeekBar sbSec;// ползунок секунд
     private Button btnSave;// кнопка сохранения настроек
     private Button btnDelete;// кнопка удаления таймера
-    private Button btnDeleteYes;// кнопка подтверждения удаления таймера
-    private Button btnDeleteNo;// кнопка отмены удаления таймера
-    private Button btnDeleteMess;//сообщение об удалении таймера. Удобно использовать кнопку без отклика
-    private LinearLayout layoutBtn;// область кнопок меню
 
     //получаем данные таймера
     Intent intent;
@@ -43,24 +38,11 @@ public class TimerMenu extends Activity implements View.OnClickListener,
     //данные таймера в меню настроек, их будем менять
     private int duration;
 
-
     // объект для преобразования времени в различные форматы
     private Converter timeConvert;
 
-    //названия кнопок
-    private String BTN_SAVE_NAME;//кнопка сохранения настроек
-    private String BTN_DELETE_NAME;//кнопка удаления таймера
-    private String BTN_DELETE_YES_NAME;//кнопка подтверждения удаления таймера
-    private String BTN_DELETE_NO_NAME;//кнопка отмены удаления таймера
-    private String BTN_DELETE_MESS_NAME;//сообщение подтверждения удаления таймера
-
-    //id кнопок
-    private final int BTN_SAVE_ID = 10;//id кнопки сохранения настроек
-    private final int BTN_DELETE_ID = 11;//id кнопки удаления таймера
-    private final int BTN_DELETE_YES_ID = 12;//id кнопки подтверждения удаления таймера
-    private final int BTN_DELETE_NO_ID = 13;//id кнопки отмены удаления таймера
-    private final int BTN_DELETE_MESS_ID = 14;//id сообщения подтверждения удаления таймера
-
+    // id диалога удаления таймера
+    private final int DELETE_DIALOG_ID = 300;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -74,12 +56,6 @@ public class TimerMenu extends Activity implements View.OnClickListener,
         timeConvert = new Converter();
         // заполняем поля настроек данными из таймера
         initSetting();
-        Log.d(LOG_TAG, "метод initSetting завершен");
-        //создание кнопок меню
-        createButtons();
-        //добавление кнопок на экран
-        addButtons(btnDelete);
-
     }
 
     //инициализация Views
@@ -90,10 +66,12 @@ public class TimerMenu extends Activity implements View.OnClickListener,
         sbHour = (SeekBar) findViewById(R.id.sbHour);
         sbMin = (SeekBar) findViewById(R.id.sbMin);
         sbSec = (SeekBar) findViewById(R.id.sbSec);
-        //btnSave = (Button) findViewById(R.id.btnSave);
-        //btnSave.setOnClickListener(this);
-        layoutBtn = (LinearLayout) findViewById(R.id.layoutBtn);
+        btnSave = (Button) findViewById(R.id.btnSave);
+        btnSave.setOnClickListener(this);
+        btnDelete = (Button) findViewById(R.id.btnDel);
+        btnDelete.setOnClickListener(this);
     }
+
     //заполняем поля настроек данными из таймера
     private void initSetting() {
         etName.setText(intent.getStringExtra(TIMER_NAME));// выводим имя таймера
@@ -109,60 +87,14 @@ public class TimerMenu extends Activity implements View.OnClickListener,
         sbSec.setOnSeekBarChangeListener(this);
     }
 
-    //создание кнопок таймера
-    private void createButtons() {
-        //создаем LayoutParams кнопок для дальнейшего использования
-        LinearLayout.LayoutParams btnLP = new LinearLayout.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-        btnLP.weight = 1;//кнопки равномерно распределяются в области layoutBtn
-        btnLP.gravity = Gravity.CENTER;// надписи на кнопках располагаются в центре
-        initBtnNames();//инициализируем имена кнопок
-
-        // создаем сами кнопки
-        // надо попробовать сделать это через цикл с использованием массива названий чтобы убрать
-        // повторяемость кода
-        btnSave = createButton(BTN_SAVE_NAME, BTN_SAVE_ID, btnLP, R.drawable.border);
-        btnDelete = createButton(BTN_DELETE_NAME, BTN_DELETE_ID, btnLP, R.drawable.border);
-        btnDeleteYes = createButton(BTN_DELETE_YES_NAME, BTN_DELETE_YES_ID, btnLP, R.drawable.border);
-        btnDeleteNo = createButton(BTN_DELETE_NO_NAME, BTN_DELETE_NO_ID, btnLP, R.drawable.border);
-        btnDeleteMess = createButton(BTN_DELETE_MESS_NAME, BTN_DELETE_MESS_ID, btnLP, R.drawable.border);
-    }
-    //имена кнопок берем из ресурса strings
-    private void initBtnNames() {
-        BTN_SAVE_NAME = getResources().getString(R.string._save);//кнопка сохранения настроек
-        BTN_DELETE_NAME = getResources().getString(R.string.delete);//кнопка удаления таймера
-        BTN_DELETE_YES_NAME = getResources().getString(R.string.yes);//кнопка подтверждения удаления таймера
-        BTN_DELETE_NO_NAME = getResources().getString(R.string.no);//кнопка отмены удаления таймера
-        BTN_DELETE_MESS_NAME = getResources().getString(R.string.delete_timer_mess);//сообщение подтверждения удаления таймера
-
-    }
-
-    //метод создания одной кнопки
-    private Button createButton(String _name, int _id, ViewGroup.LayoutParams _lp,
-                                int _background) {
-        Button btn = new Button(this);// новая кнопка
-        btn.setId(_id);// id кнопки
-        btn.setText(_name);// название кнопки
-        btn.setLayoutParams(_lp);// параметры расположения кнопки
-        btn.setTextColor(getResources().getColor(R.color.textColor));// цвет текста кнопки
-        btn.setBackgroundResource(_background);// рамка вокруг кнопки
-        btn.setOnClickListener(this);//добавляем данный класс слушателем кнопки
-        return btn;
-    }
-
-    //пересоздаем панель кнопок
-    private void addButtons(Button... btns) {//получаем набор кнопок btns
-        layoutBtn.removeAllViews();//удаляем старые кнопки
-        //добавляем новые
-        for (Button btn : btns) {
-            layoutBtn.addView(btn);
-        }
-    }
-
     public void onClick(View v) {
         switch (v.getId()) {
             case R.id.btnSave:
                 save();
+                break;
+            case R.id.btnDel:
+                //отображаем диалог удаления таймера
+                showDialog(DELETE_DIALOG_ID);
                 break;
         }
     }
@@ -177,6 +109,40 @@ public class TimerMenu extends Activity implements View.OnClickListener,
         finish();//закрываем меню настроек таймера
     }
 
+    //создаем диалог для подтверждения удаления таймера
+    protected Dialog onCreateDialog(int dialogId) {
+        AlertDialog.Builder deleteDialog = new AlertDialog.Builder(this);
+        //заголовок диалога
+        deleteDialog.setTitle(getResources().getString(R.string.do_you_want_to_del) + " "
+                + etName.getText() + "?");
+        //кнопка положительного ответа
+        deleteDialog.setPositiveButton(R.string.yes, dialogListener);
+        //кнопка отрицательного ответа
+        deleteDialog.setNegativeButton(R.string.no, dialogListener);
+        return deleteDialog.create();
+    }
+
+    DialogInterface.OnClickListener dialogListener = new DialogInterface.OnClickListener() {
+        @Override
+        public void onClick(DialogInterface dialog, int which) {
+            switch (which) {
+                case Dialog.BUTTON_POSITIVE:
+                    deleteTimer();//удаляем таймер
+                    finish();//закрываем меню настроек
+                    break;
+                case Dialog.BUTTON_NEGATIVE://просто выходим из диалога удаления таймера
+                    break;
+            }
+        }
+    };
+
+    //отправляем MainActivity запрос на удаление таймера
+    private  void deleteTimer() {
+        setResult(TIMER_DELETE_RESULT);//отправка сообщения об удалении таймера
+        finish();//закрываем меню таймера
+    }
+
+    //настраиваем с помощью seekBar время работы таймера и выводим его на экран
     @Override
     public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
         switch (seekBar.getId()) {
@@ -195,11 +161,9 @@ public class TimerMenu extends Activity implements View.OnClickListener,
 
     @Override
     public void onStartTrackingTouch(SeekBar seekBar) {
-
     }
 
     @Override
     public void onStopTrackingTouch(SeekBar seekBar) {
-
     }
 }

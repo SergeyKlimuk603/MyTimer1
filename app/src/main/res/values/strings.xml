@@ -19,4 +19,5 @@
     <string name="no">No</string>
     <string name="delete_timer_mess">Delete timer?</string>
     <string name="_save">Save</string>
+    <string name="do_you_want_to_del">Do you want to delete timer</string>
 </resources>
