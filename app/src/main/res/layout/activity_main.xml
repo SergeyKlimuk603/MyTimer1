@@ -60,11 +60,16 @@
             android:text="@string/add"
             />
         <FrameLayout
-            android:id="@+id/flSoundOffBack"
+
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginLeft="10dp"
             >
+            <FrameLayout
+                android:id="@+id/flSoundOffBack"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                />
             <TextView
                 android:id="@+id/btnSoundOff"
                 android:layout_width="match_parent"

@@ -5,9 +5,14 @@ import androidx.appcompat.app.AppCompatActivity;
 import android.app.Activity;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.graphics.Color;
+import android.media.MediaPlayer;
 import android.os.Bundle;
+import android.os.Handler;
 import android.util.Log;
 import android.view.View;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -48,11 +53,18 @@ public class MainActivity extends Activity implements View.OnClickListener {
     //список таймеров
     HashMap<Integer, MyTimer> timers;
 
+    //проигрыватель звуковых файлов
+    MediaPlayer mp;
+
+    //переменная онимации кнопок, если true - анимация включена
+    private boolean animation = false;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
+        //создаем музыкальный проигрыватель
+        mp = MediaPlayer.create(this, R.raw.music);
         //инициализация представлений
         initView();
         //создаем список для таймеров
@@ -135,6 +147,8 @@ public class MainActivity extends Activity implements View.OnClickListener {
             case R.id.btnAdd:
                 addNewTimer();
                 break;
+            case R.id.btnSoundOff:
+                stopSound();
         }
     }
 
@@ -142,17 +156,27 @@ public class MainActivity extends Activity implements View.OnClickListener {
     // таймер был последним (определяем по сообщению таймера: если оно совпадает с тем, что
     // на общем экране - значит это последний сработавший таймер)
     public void timerReset(String _message) {
-        //Toast.makeText(this, "реализуй метод timerReset в MainActivity",
-         //       Toast.LENGTH_LONG).show();
+        //выключаем звук
+        stopSound();
+        //Если сообщения таймера и главное сообщение совпадают, сбрасываем подсветку главного сообщения
+        String mess = tvMainMess.getText().toString();
+        if (mess.equals(_message)) {
+            //убираем фон
+            flMainMessBack.setBackgroundColor(Color.BLACK);
+            //удаляем сообщение
+            tvMainMess.setText(getResources().getText(R.string.no_message));
+        }
     }
-
 
     // сообщаем активности о завершении отсчета для включения сигнала
     // и передаем ей сообщение таймера для вывода его на общий экран сообщений
     public void timerEnd(String _message) {
-        Toast.makeText(this, "реализуй метод timerEnd в MainActivity",
-                Toast.LENGTH_LONG).show();
-
+        //подсвечиваем панель главного сообщения
+        flMainMessBack.setBackgroundResource(R.drawable.border_solid);
+        //выводим сообщение таймера на панель главного сообщения
+        tvMainMess.setText(_message);
+        //включаем сигнал
+        playSound();
     }
     //метод принимает настройки из TimerMenu и меняет настройки соответствующего таймера
     //вызов TimerMenu происходит из самого таймера командой
@@ -199,5 +223,58 @@ public class MainActivity extends Activity implements View.OnClickListener {
         editor.putString((TIMER_MESSAGE + t.getId()), t.getMessage());
         editor.putInt((TIMER_DURATION + t.getId()), t.getDuration());
         editor.apply();
+    }
+
+    //начать воспроизведение сигнала
+    private void playSound() {
+        //включаем сигнал
+        mp.release();//освобождаем ресурсы старого музыкального проигрывателя
+        //создаем новый музыкальный проигрыватель
+        mp = MediaPlayer.create(this, R.raw.music);
+        mp.start();//начинаем воспроизведение
+        //присваиваем слушателя, который определяет окончание композиции
+        mp.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
+            @Override
+            public void onCompletion(MediaPlayer mp) {
+                mp.release();//освобождаем ресурсы музыкального проигрывателя
+                animation = false;
+            }
+        });
+        //включаем пульсацию кнопки выключения сигнала SoundOff
+        frameLayoutAnim(flSoundOffBack);
+    }
+
+    //остановить воспроизведение сигнала
+    private void stopSound() {
+        animation = false;//запретить анимацию кнопки выключения звука
+        flSoundOffBack.setBackgroundColor(Color.BLACK);//убираем фон кнопки выключения звука
+        mp.release();//выключаем звук и освобождаем ресурсы проигрывателя
+    }
+
+    private void frameLayoutAnim(FrameLayout fl) {
+        if(animation) {return;}//если анимация уже запущена выходим из метода
+        animation = true;//разрешаем анимацию
+        //создаем анимацию в другом потоке
+        Handler handler = new Handler();
+        handler.post(new Runnable() {
+            @Override
+            public void run() {
+                //если анимация запрещена устанавливаем черный фон и покидаем метод
+                if(animation == false) {
+                    fl.setBackgroundColor(Color.BLACK);
+                    return;
+                }
+                //создаем и начинаем анимацию
+                Animation anim = AnimationUtils.loadAnimation(MainActivity.this, R.anim.alpha);
+                fl.setBackgroundResource(R.drawable.border_solid);//фон анимации
+                fl.startAnimation(anim);
+                handler.postDelayed(this, 2000);
+            }
+        });
+    }
+
+    protected void onDestroy() {
+        mp.release();//убиваем плеер при выходе из приложения
+        super.onDestroy();
     }
 }
