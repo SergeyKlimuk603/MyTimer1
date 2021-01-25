@@ -1,8 +1,5 @@
 package by.klimuk.mytimer1;
 
-
-import android.app.Activity;
-import android.content.Context;
 import android.content.Intent;
 import android.os.Handler;
 import android.util.Log;
@@ -15,7 +12,6 @@ import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import static by.klimuk.mytimer1.MainActivity.*;
 
@@ -69,10 +65,10 @@ public class MyTimer implements View.OnClickListener, Runnable {
     private String BTN_CONT_NAME;
 
     // конструктор класса MyTimer
-    public MyTimer(MainActivity activity, int _id, String _name, String _message,
+    public MyTimer(MainActivity _activity, int _id, String _name, String _message,
                    int _dur) {
         //передаем переменные из активити
-        setActivity(activity);
+        setActivity(_activity);
         setId(_id);
         //инициализируем переменные названий кнопок
         initBtnNames();
@@ -80,7 +76,7 @@ public class MyTimer implements View.OnClickListener, Runnable {
         initTimer();
         //настраиваем таймер
         initSetting(_name, _message, _dur);
-        //создаем handler
+        //создаем handler для отсчета интервала времени 1с
         handler = new Handler();
     }
 
@@ -98,13 +94,12 @@ public class MyTimer implements View.OnClickListener, Runnable {
         initView();
         //создаем кнопки управления таймером
         createButtons();
-        //создаём конвертор для преобразования формата времени
+        //создаём конвертер для преобразования формата времени
         timeConvert = new Converter();
     }
 
     //настройка таймера (запускаем при создании таймера или при изменении его настроек)
     void initSetting(String _name, String _message, int _duration) {
-        Log.d(LOG_TAG, "сработал initSetting " + _name + _message + _duration);
         setName(_name);// установка имени таймера
         setMessage(_message);// установка сообщения таймера
         setDuration(_duration);// установка длительности таймера
@@ -131,7 +126,6 @@ public class MyTimer implements View.OnClickListener, Runnable {
         ivSet = (ImageView) layoutMain.findViewById(R.id.ivSet);// добавляем значек для вызова меню настроек таймера
         ivSet.setOnClickListener(this);//  добавляем слушателя к значку настройки таймера
     }
-
 
     //создание кнопок таймера
     private void createButtons() {
@@ -197,7 +191,6 @@ public class MyTimer implements View.OnClickListener, Runnable {
 
     //запустить отсчет
     private void start() {
-        Log.d(LOG_TAG, "Нажали кнопку start");
         addButtons(btnPause, btnReset);//обновляем кнопки
         runTimer = true;// таймер считает
         lostTime = duration; //начало отсчета, оставшееся для отсчета время
@@ -224,7 +217,6 @@ public class MyTimer implements View.OnClickListener, Runnable {
 
     //приостановить отсчет времени
     private void pause() {
-        Log.d(LOG_TAG, "Нажали кнопку pause");
         addButtons(btnCont, btnReset);//обновляем кнопки
         runTimer = false;// останавливаем таймер
         lostTime = time;// запоминаем оставшееся для отсчета время
@@ -232,7 +224,6 @@ public class MyTimer implements View.OnClickListener, Runnable {
 
     //продолжить отсчет времени
     private void cont() {
-        Log.d(LOG_TAG, "Нажали кнопку cont");
         addButtons(btnPause, btnReset);//обновляем кнопки
         // продолжаем остчет времени
         startTime = System.currentTimeMillis();// системное время при пуске или перезапуске таймера
@@ -265,14 +256,12 @@ public class MyTimer implements View.OnClickListener, Runnable {
         if (!runTimer) return;//таймер остановлен, прекращаем отсчет
         time = lostTime - ((int) (System.currentTimeMillis() - startTime) / 1000);// оставшееся текущее время
         tvMess.setText(timeConvert.intToStringTime(time));//выводим оставшееся текущее время на экран
-        Log.d(LOG_TAG, "" + time);
         if (time <= 0){
             endTime();
             return;//время вышло
         }
         handler.postDelayed(this, 1000);
     }
-
 
 //___________Геттеры и сеттеры переменных таймера_____________________
     public int getId() {

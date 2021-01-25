@@ -24,4 +24,5 @@
     <string name="sound_off">Sound off</string>
     <string name="add">Add</string>
     <string name="no_message">No messages</string>
+    <string name="max_timers_amount">Maximum timers</string>
 </resources>

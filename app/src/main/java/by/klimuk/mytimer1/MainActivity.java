@@ -105,8 +105,8 @@ public class MainActivity extends Activity implements View.OnClickListener {
         //если свободного id нет, то выводим сообщение, что создано максимальное количество
         // таймеров и выходим из метода
         if(freeId >= MAX_TIMERS_AMOUNT) {
-            Toast.makeText(this, "Максимальное количество таймеров - " +
-                    MAX_TIMERS_AMOUNT + ". Больше создать нельзя.", Toast.LENGTH_LONG).show();
+            Toast.makeText(this, getResources().getText(R.string.max_timers_amount) +
+                    " = " + MAX_TIMERS_AMOUNT, Toast.LENGTH_LONG).show();
             return;
         }
         //создаем таймер с полученным свободным id
@@ -142,13 +142,14 @@ public class MainActivity extends Activity implements View.OnClickListener {
         return MAX_TIMERS_AMOUNT;
     }
 
+    //обрабатываем нажатие кнопок на главной панели
     public void onClick(View v) {
         switch (v.getId()) {
-            case R.id.btnAdd:
-                addNewTimer();
+            case R.id.btnAdd://нажата кнопка добавления таймера
+                addNewTimer();//создать и добавить новый таймер
                 break;
-            case R.id.btnSoundOff:
-                stopSound();
+            case R.id.btnSoundOff://нажата кнопка выключения звука
+                stopSound();//выключить звук
         }
     }
 

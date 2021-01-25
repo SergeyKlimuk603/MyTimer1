@@ -33,11 +33,4 @@ class Converter {
         int seconds = hour * 3600 + min * 60 + sec;
         return seconds;
     }
-    //похоже что этот метод не нужен
-    String changeTime(Integer h, Integer m, Integer s) {
-        if (h != null) hour = h;
-        if (m != null) min = m;
-        if (s != null) sec = s;
-        return String.format("%02d:%02d:%02d", hour, min, sec);
-    }
 }
