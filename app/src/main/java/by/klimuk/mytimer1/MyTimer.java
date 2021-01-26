@@ -253,6 +253,8 @@ public class MyTimer implements View.OnClickListener, Runnable {
 
     // отсчет времени
     public void run() {
+        Log.d(LOG_TAG, "Timer " + name + ", time = " + time);
+
         if (!runTimer) return;//таймер остановлен, прекращаем отсчет
         time = lostTime - ((int) (System.currentTimeMillis() - startTime) / 1000);// оставшееся текущее время
         tvMess.setText(timeConvert.intToStringTime(time));//выводим оставшееся текущее время на экран
@@ -307,6 +309,7 @@ public class MyTimer implements View.OnClickListener, Runnable {
     }
 
     public void setActivity(MainActivity activity) {
+        this.activity = null;
         this.activity = activity;
     }
 

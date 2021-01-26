@@ -15,6 +15,7 @@ import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -50,6 +51,10 @@ public class MainActivity extends Activity implements View.OnClickListener {
     TextView btnSoundOff;//кнопка отключения звука
     TextView btnAdd;//кнопка добавления таймера
 
+    //создаем коллекцию представлений таймеров
+    private HashMap<Integer, View> timerViews;
+    private HashMap<Integer, HashMap<Integer, View>> timersViews;
+
     //список таймеров
     HashMap<Integer, MyTimer> timers;
 
@@ -63,14 +68,34 @@ public class MainActivity extends Activity implements View.OnClickListener {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        Log.d(LOG_TAG, "----------------MainActivity onCreate hash =" + this.hashCode());
+
         //создаем музыкальный проигрыватель
         mp = MediaPlayer.create(this, R.raw.music);
         //инициализация представлений
         initView();
+
+                timers = (HashMap<Integer, MyTimer>) getLastNonConfigurationInstance();
+                if (timers == null) {
         //создаем список для таймеров
         timers = new HashMap<Integer, MyTimer>();
+
         //заполняем список таймерами из файла (создаем таймеры из файла)
         createTimers();
+                    Log.d(LOG_TAG, "Создали новые таймеры timers = " + timers.hashCode());
+
+                } else {
+                    Log.d(LOG_TAG, "Восстановили таймеры timers = " + timers.hashCode());
+
+                    for (int i = 0; i < timers.size(); i++) {
+                        timers.get(i).setActivity(this);
+                        //timersList.addView((FrameLayout) timers.get(i).getLayoutMain());
+                    }
+                }
+                Log.d(LOG_TAG, "Hash MainActivity = " + this.hashCode());
+                for (int i = 0; i < timers.size(); i++) {
+                    Log.d(LOG_TAG, "Hash Timer" + i + " = " + timers.get(i).hashCode());
+                }
     }
 
     private void initView() {
@@ -187,6 +212,8 @@ public class MainActivity extends Activity implements View.OnClickListener {
     protected  void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
 
+        Log.d(LOG_TAG, "MainActivity start onActivityResult hash = " + this.hashCode());
+
         // проверяем ответ настроек таймера с id записанным в requestCode
         if (resultCode == RESULT_OK) {
             String name = data.getStringExtra(TIMER_NAME);// извлекаем имя таймера из интента
@@ -194,11 +221,17 @@ public class MainActivity extends Activity implements View.OnClickListener {
             int dur = data.getIntExtra(TIMER_DURATION, DEFAULT_DURATION);// извлекаем время таймера из интента
             timers.get(requestCode).initSetting(name, mess, dur);// отправляем настройки в таймер. в requestCode содержится id таймера который вызват меню настроек
             saveTimer(timers.get(requestCode));//сохраняем настройки таймера в файл
+            Log.d(LOG_TAG, "MainActivity stop onActivityResult");
             return;
+        } else {
+            Log.d(LOG_TAG, "MainActivity onActivityResult intent == null");
         }
 
         //удаляем таймер с id записанным в requestCode
         if(resultCode == TIMER_DELETE_RESULT) {
+
+            Log.d(LOG_TAG, "MainActivity del start onActivityResult");
+
             //создаем объекты для работы с файлом сохранения таймеров
             SharedPreferences sPref = getSharedPreferences(SAVE_FILE_NAME, MODE_PRIVATE);
             SharedPreferences.Editor editor = sPref.edit();
@@ -212,6 +245,9 @@ public class MainActivity extends Activity implements View.OnClickListener {
             timersList.removeView(timers.get(requestCode).getLayoutMain());
             //удаляем таймер из списка
             timers.remove(requestCode);
+
+            Log.d(LOG_TAG, "MainActivity del stop onActivityResult");
+
         }
     }
 
@@ -275,7 +311,32 @@ public class MainActivity extends Activity implements View.OnClickListener {
     }
 
     protected void onDestroy() {
+        Log.d(LOG_TAG, "-------------------------------------------------------------------MainActivity onDestroy hash = " + this.hashCode());
         mp.release();//убиваем плеер при выходе из приложения
         super.onDestroy();
     }
+
+
+
+    //все что ниже можно удалить___________________________________________________
+
+    protected void onPause() {
+        Log.d(LOG_TAG, "-------------------------MainActivity onPause");
+        super.onPause();
+    }
+    protected void onStop() {
+        Log.d(LOG_TAG, "--------------------------------MainActivity onStop");
+        super.onStop();
+    }
+
+    protected void onSaveInstanceState(Bundle onS) {
+        Log.d(LOG_TAG, "---------------------------------------MainActivity onSaveInstanceState");
+        super.onSaveInstanceState(onS);
+    }
+
+    //сохраняем ссылку на коллекцию таймеров
+    public Object onRetainNonConfigurationInstance() {
+        return timers;
+    }
+
 }
